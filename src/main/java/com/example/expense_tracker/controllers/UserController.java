@@ -24,10 +24,14 @@ public class UserController {
         LOGGER.info("Getting the user by id: " + userId);
 
         Optional<User> userOptional = userService.getUserById(userId);
-        if (userOptional.isEmpty())
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        else
-            return ResponseEntity.status(HttpStatus.OK).body(userOptional.get());
+        return userOptional.map(user -> ResponseEntity.status(HttpStatus.OK).body(user)).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @GetMapping("/email")
+    public ResponseEntity<User> getUserByEmail(@RequestParam String email) {
+        LOGGER.info("Getting the user by email: " + email);
+        Optional<User> userOptional = userService.getUserByEmail(email);
+        return userOptional.map(user -> ResponseEntity.status(HttpStatus.OK).body(user)).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     @PostMapping("/login")
@@ -43,4 +47,14 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
+    @PostMapping
+    public ResponseEntity<User> createUser(@RequestBody User user) {
+        LOGGER.info("Creating new user: " + user);
+        User newUser = userService.createUser(
+                user.getName(),
+                user.getEmail(),
+                user.getPassword()
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
+    }
 }
